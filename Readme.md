@@ -66,18 +66,16 @@ docker compose --profile tools run --rm -e KAFKA_CLI_CONTAINER=1 kafka-cli
 `setup-acl.sh` запускает себя в контейнере `kafka-cli` (профиль `tools`), ждёт готовности всех трёх брокеров,
 создаёт `topic-1` и `topic-2` и выдаёт ACL. Скрипт можно запускать повторно.
 
-**Важно:** топики и ACL хранятся в данных ZooKeeper/Kafka. После `docker compose down -v` (или пересоздания
-контейнеров) их нет — снова запустите `./setup-acl.sh`, иначе клиенты получат `TOPIC_AUTHORIZATION_FAILED`.
+Топики и ACL хранятся в данных ZooKeeper/Kafka. После `docker compose down -v` (или пересоздания
+контейнеров) их нет — снова запустить `./setup-acl.sh`, иначе клиенты получат `TOPIC_AUTHORIZATION_FAILED`.
 
 ## Проверка
 Команды приведены в двух вариантах — для **PowerShell** (перенос строки — обратная кавычка `` ` ``)
-и для **Bash** (перенос — `\`). В Git Bash на Windows перед командами с путями `/etc/...` выполните
+и для **Bash** (перенос — `\`). В Git Bash на Windows перед командами с путями `/etc/...` выполнить
 `export MSYS_NO_PATHCONV=1`, иначе пути будут переписаны в `C:/Program Files/Git/etc/...`.
 
 ### Java-клиенты
 Команды Maven одинаковы для PowerShell и Bash.
-Аргументы `-D...` взяты в кавычки целиком — без этого PowerShell разбивает их по точке
-(`Unknown lifecycle phase ".mainClass=..."`).
 
 Продюсер (сертификат `producer`) — запись в оба топика проходит:
 ```bash
@@ -173,11 +171,3 @@ docker compose --profile tools run --rm --entrypoint kafka-acls kafka-cli \
   --command-config /etc/kafka/clients/kafka-admin/client-ssl.properties
 ```
 
-Если Kafka CLI установлен локально, можно работать с хоста через `localhost:9093` и
-`certificates/clients/<клиент>/client-ssl-local.properties`.
-
-## Перевыпуск клиентских сертификатов
-```bash
-./generate-client-certs.sh
-```
-Нужны `openssl` и `keytool` (JDK). Сертификаты подписываются CA из `certificates/ca`.
