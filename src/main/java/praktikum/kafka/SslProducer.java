@@ -13,24 +13,26 @@ import java.util.Properties;
 
 public class SslProducer {
 
-    private static final Path BROKER_CERTS = Paths.get("certificates/brokers/kafka-1");
+    // Собственный клиентский сертификат: права выдаются через ACL, суперпользователем он не является
+    private static final Path CLIENT_CERTS = Paths.get("certificates/clients/producer");
 
     public static void main(String[] args) throws IOException {
         Properties props = new Properties();
 
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093,localhost:9094,localhost:9095");
 
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
 
         props.put("security.protocol", "SSL");
         props.put("ssl.truststore.location",
-                BROKER_CERTS.resolve("kafka.server.truststore.jks").toAbsolutePath().toString());
-        props.put("ssl.truststore.password", readPassword(BROKER_CERTS.resolve("truststore.password")));
+                CLIENT_CERTS.resolve("kafka.client.truststore.jks").toAbsolutePath().toString());
+        props.put("ssl.truststore.password", readPassword(CLIENT_CERTS.resolve("truststore.password")));
         props.put("ssl.keystore.location",
-                BROKER_CERTS.resolve("kafka.server.keystore.jks").toAbsolutePath().toString());
-        props.put("ssl.keystore.password", readPassword(BROKER_CERTS.resolve("keystore.password")));
-        props.put("ssl.key.password", readPassword(BROKER_CERTS.resolve("key.password")));
+                CLIENT_CERTS.resolve("kafka.client.keystore.jks").toAbsolutePath().toString());
+        props.put("ssl.keystore.password", readPassword(CLIENT_CERTS.resolve("keystore.password")));
+        props.put("ssl.key.password", readPassword(CLIENT_CERTS.resolve("key.password")));
 
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
             String topic = args.length > 0 ? args[0] : "topic-1";
